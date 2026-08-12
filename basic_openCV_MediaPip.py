@@ -1,11 +1,10 @@
-
 import cv2
 import mediapipe as mp
 
-# Camera start
+# Start the camera
 cap = cv2.VideoCapture(0)
 
-# MediaPipe Hands
+# Initialize MediaPipe Hands
 mphand = mp.solutions.hands
 hands = mphand.Hands()
 
@@ -16,34 +15,35 @@ while True:
     success, img = cap.read()
 
     if not success:
-        print("Camera frame nahi mil raha")
+        print("Unable to read the camera frame.")
         break
 
-    # BGR -> RGB
+    # Convert BGR to RGB
     imgRGB = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-    # Hand detection
+    # Detect hands
     result = hands.process(imgRGB)
 
-    # Agar hand mila
+    # Check for detected hands
     if result.multi_hand_landmarks:
         for handlms in result.multi_hand_landmarks:
 
-            # Hand landmarks draw karo
+            # Draw hand landmarks
             mpDraw.draw_landmarks(
                 img,
                 handlms,
                 mphand.HAND_CONNECTIONS
             )
 
-    # Show camera
-    cv2.imshow("Image", img)
+    # Display the camera
+    cv2.imshow("Hand Detection", img)
 
     # Press Q to exit
     if cv2.waitKey(1) & 0xFF == ord('q'):
         break
 
-# Cleanup
+# Release the camera
 cap.release()
-cv2.destroyAllWindows()
 
+# Close all windows
+cv2.destroyAllWindows()
