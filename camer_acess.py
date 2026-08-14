@@ -29,7 +29,7 @@ def show_photo(img_name):
     cv2.imshow("Saved Picture", saved_image)
     print("Saved photo")
     cv2.waitKey(2000)
-    cv2.destroyWindow("Saved Picture")
+    cv2.destroyWindow("Saved Picture")  
 
 # 4. Camera release
 def close_camera(cap):
