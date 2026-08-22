@@ -1,7 +1,6 @@
 import cv2
 import mediapipe as mp
 import os
-import time
 import urllib.request
 import traceback
 
@@ -106,7 +105,7 @@ try:
     # Timestamp
     # =================================================
 
-    start_time = time.monotonic()
+    timestamp_ms = 0
 
 
     # =================================================
@@ -125,28 +124,38 @@ try:
             break
 
 
+        # =================================================
         # Mirror
+        # =================================================
+
         frame = cv2.flip(frame, 1)
 
 
+        # =================================================
         # BGR -> RGB
+        # =================================================
+
         rgb_frame = cv2.cvtColor(
             frame,
             cv2.COLOR_BGR2RGB
         )
 
 
+        # =================================================
         # MediaPipe image
+        # =================================================
+
         mp_image = mp.Image(
             image_format=mp.ImageFormat.SRGB,
             data=rgb_frame
         )
 
 
-        # Timestamp
-        timestamp_ms = int(
-            (time.monotonic() - start_time) * 1000
-        )
+        # =================================================
+        # Increasing Timestamp
+        # =================================================
+
+        timestamp_ms += 33
 
 
         # =================================================
@@ -170,8 +179,21 @@ try:
 
             bbox = detection.bounding_box
 
-            x = max(0, bbox.origin_x)
-            y = max(0, bbox.origin_y)
+
+            # =================================================
+            # Bounding Box
+            # =================================================
+
+            x = max(
+                0,
+                bbox.origin_x
+            )
+
+            y = max(
+                0,
+                bbox.origin_y
+            )
+
 
             x2 = min(
                 frame.shape[1],
@@ -184,7 +206,10 @@ try:
             )
 
 
-            # Face box
+            # =================================================
+            # Face Box
+            # =================================================
+
             cv2.rectangle(
                 frame,
                 (x, y),
@@ -194,18 +219,34 @@ try:
             )
 
 
+            # =================================================
             # Confidence
+            # =================================================
+
             if detection.categories:
 
-                confidence = detection.categories[0].score
+                confidence = (
+                    detection.categories[0].score
+                )
+
 
                 cv2.putText(
                     frame,
-                    f"Confidence: {confidence * 100:.1f}%",
-                    (x, max(30, y - 10)),
+
+                    f"Confidence: "
+                    f"{confidence * 100:.1f}%",
+
+                    (
+                        x,
+                        max(30, y - 10)
+                    ),
+
                     cv2.FONT_HERSHEY_SIMPLEX,
+
                     0.6,
+
                     (0, 255, 0),
+
                     2
                 )
 
@@ -217,39 +258,73 @@ try:
             for keypoint in detection.keypoints:
 
                 px = int(
-                    keypoint.x * frame.shape[1]
+                    keypoint.x *
+                    frame.shape[1]
                 )
 
                 py = int(
-                    keypoint.y * frame.shape[0]
+                    keypoint.y *
+                    frame.shape[0]
                 )
+
 
                 cv2.circle(
                     frame,
+
                     (px, py),
+
                     4,
+
                     (0, 0, 255),
+
                     -1
                 )
 
 
         # =================================================
-        # Face count
+        # Face Count
         # =================================================
 
         cv2.putText(
             frame,
+
             f"Faces Detected: {face_count}",
+
             (20, 40),
+
             cv2.FONT_HERSHEY_SIMPLEX,
+
             0.9,
+
             (255, 255, 255),
+
             2
         )
 
 
         # =================================================
-        # Show
+        # Timestamp Display
+        # =================================================
+
+        cv2.putText(
+            frame,
+
+            f"Timestamp: {timestamp_ms} ms",
+
+            (20, 75),
+
+            cv2.FONT_HERSHEY_SIMPLEX,
+
+            0.7,
+
+            (255, 255, 255),
+
+            2
+        )
+
+
+        # =================================================
+        # Show Camera
         # =================================================
 
         cv2.imshow(
@@ -262,37 +337,74 @@ try:
         # Q = Quit
         # =================================================
 
-        if cv2.waitKey(1) & 0xFF == ord("q"):
+        key = cv2.waitKey(1) & 0xFF
+
+
+        if key == ord("q"):
 
             print("Q pressed. Closing...")
 
             break
 
 
+# =====================================================
+# Error Handling
+# =====================================================
+
 except Exception:
 
-    print("\n====================================")
-    print("PROGRAM ERROR")
-    print("====================================\n")
+    print(
+        "\n===================================="
+    )
+
+    print(
+        "PROGRAM ERROR"
+    )
+
+    print(
+        "====================================\n"
+    )
+
 
     traceback.print_exc()
 
-    print("\n====================================")
-    input("Press Enter to close...")
 
+    print(
+        "\n===================================="
+    )
+
+    input(
+        "Press Enter to close..."
+    )
+
+
+# =====================================================
+# Cleanup
+# =====================================================
 
 finally:
 
     try:
+
         cap.release()
+
     except:
+
         pass
 
+
     try:
+
         detector.close()
+
     except:
+
         pass
+
 
     cv2.destroyAllWindows()
 
-    print("Program closed.")
+
+    print(
+        "Program closed."
+    )
